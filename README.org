@@ -1,0 +1,9 @@
+#+title: README
+
+If you're reading this, then you're probably reading the source code for my blog on Github. If not, then you visited this page on my blog. Either way, congratulations! This is a /very/ good use of your time 😉
+
+My blog is maintained and built using the following excellent tools:
+
+- [[https://www.gnu.org/software/emacs/][Emacs]]
+- [[https://orgmode.org/][org-mode]]
+- [[https://github.com/theiceshelf/firn][firn]] - By far my favorite static site generating tool ever. May it live a long life.
