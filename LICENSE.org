@@ -1,2 +1,2 @@
-#+title: License
+#+title: 🤓 License
  Tom Purl's Blog © 2022 by Tom Purl is licensed under [[http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1][Attribution 4.0 International]].

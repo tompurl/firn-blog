@@ -1,4 +1,4 @@
-#+TITLE: About Me
+#+TITLE: 👨 About Me
 
 #+CAPTION: A cartoon of a small dog with my face
 [[https://static.tompurl.com/images/Tom_as_a_dog_small.jpg]]

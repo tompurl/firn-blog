@@ -1,4 +1,4 @@
-#+title: README
+#+title: 📖 README
 
 If you're reading this, then you're probably reading the source code for my blog on Github. If not, then you visited this page on [[https://blog.tompurl.com][my blog]]. Either way, congratulations! This is a /very/ good use of your time 😉
 
