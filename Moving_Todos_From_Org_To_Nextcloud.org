@@ -1,0 +1,71 @@
+#+TITLE: Moving my Todo Lists From org-mode into Nextcloud
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: emacs nextcloud
+
+#+BEGIN_NOTE
+After [[https://www.reddit.com/r/emacs/comments/p4bj5k/moving_my_todo_lists_from_orgmode_into_nextcloud/][discussing this post]] with a few people in Reddit I wanted to emphasize that the process below is *only* for *personal to-do lists and their related notes*. I personally would not do something as foolish as store company information (even to-do's) outside of my employer's cloud and I *really* recommend that you do the same 😸
+#+END_NOTE
+
+I'm in the process of moving all of my *personal to-do lists and projects* into Nextcloud from =org-mode= after almost 10 years. I'm surprised by how well this is working for me and I thought it might be useful to write down some of my thoughts.
+
+But first, a little background. Currently I have two-types of to-do lists:
+
+1. Project-based
+   a. Tasks are grouped in a somewhat formal way, have a life cycle and all lead to a common goal
+2. Ephemeral and recurring
+   a. All of the little tasks that we need to write down so we remember them
+
+In =org-mode= I used to have a separate file for each project and a few, huge files for all of my ephemeral and recurring tasks. I then interacted with these todo lists using Emacs with lots of great add-ons on my persional laptop and organice everywhere else. This was always "good enough" to keep me from jumping ship but bad enough to cause me to struggle when I wasn't using my personal laptop (which is 95% of my waking hours).
+
+Nextcloud is the best option I've found to replace =org-mode= for my to-do lists. Scratch that - it's an /excellent/ option. Here's how I'm using it and why I am enjoying it so much more than =org-mode= for this particular use case.
+
+* Projects
+I'm storing projects as Kanban boards in Nextcloud's *Deck* app. Each board has the following *lists* which dictate each task's life-cycle:
+
+- To-Do
+- In-Process
+- Done
+
+Within each list we store *cards*, These cards can also have due dates and have a *description section* that uses Markdown formatting. This section can also include *clickable checklists*, and the Deck app tracks these checklist items as if they were sub-tasks (which was a nice UI surprise).
+
+I prepend each board's title with a suffix of *Story*. For example, my board that covers migrating my self-hosted Nextcloud instance to my new K8S cluster is titled *Story - Migrate nextcloud to new k8s cluster*. I then map these stories to parent *features* by doing the following.
+
+1. Creating a *feature card* (if it doesn't exist already) in one of the following *project boads*:
+   a. !! Personal Projects
+   b. !! Professional Projects
+2. Linking my story board to the feature card by creating a *Nextcloud project*.
+   a. In Nextcloud, projects are a fancy way of saying that two "things" are linked together somehow.
+
+Now I can view all of the stories associated with a feature by looking at the *Details* section of the feature card.
+
+I use a very simple, Kanban-like workflow for moving my tasks to completion. Finally, once a board is completed I *archive* it.
+
+Managing my projects in the Deck app is very intuitive, easy and robust. However, sometimes it's difficult to use the Deck app on your phone, even though the Deck mobile app is very good. Also, Kanban boards aren't very good at storing one-off, ephemeral tasks or recurring tasks. They are better suited for formal projects.
+* Integrating Project Tasks with the Calendar App
+A /killer/ feature of the *Deck* app in Nextcloud (and honestly I've never seen this anywhere else) is its tight and intuitive integration with multiple other Nextcloud apps, including the Nextcloud *Calendar* app. Here's how the two apps are linked:
+
+1. Each board is a calendar
+2. Each card on that board is a *task* (whish are part of the CalDAV standard)
+
+*Note*: Deck boards are CalDAV calendars but *don't* support the entire standard. For that reason you can't really edit them using a CalDAV-compliant client. However you *can view them* using such a client and then edit them using the Nextcloud website or [[https://github.com/stefan-niedermann/nextcloud-deck][Nextcloud Deck for Android]]. Please see my *Special Note* section below for more details.
+
+If you give your Deck card a due date it will show up on your calendar alongside your events, along with any *tasks* that you created outside of the Deck app. Which is pretty sweet 🙂
+* Advanced Task Management using the Tasks App
+The Nextcloud Tasks app makes it easy to manage *ephemeral or repeating tasks*. Like I said earlier, Kanban boards aren't very well suited for one-off tasks (pick up the dry cleaning) or recurring tasks. I don't think there's even a way to create recurring lists or cards (i.e. tasks) in the Deck app. I therefore use the Nextcloud *Tasks app* to manage a few ephemeral *task lists* for me.
+
+Since tasks are part of the CalDAV standard it makes sense that they are stored with the events in each of your calendars (i.e. Deck boards). By that I mean that, behind the scenes, tasks and events are stored in Nextcloud like they are in any other CalDAV-compliant server. However, your *interfaces to those tasks* include the Deck, Calendar, and Tasks apps (to varying degrees). This gives you a *lot* of flexibility with how you manage your project and ephemeral todo list workflows when using the Nextcloud web interface.
+
+Note that the CalDAV standard does support recurring tasks but the Nextcloud Tasks app does *not*. However, using a variety of third-party applications (like [[https://f-droid.org/en/packages/org.dmfs.tasks/][OpenTasks]] for Android) you can create recurring tasks that can be synced with your Nextcloud server using a CalDAV syncing tool (like the excellent [[https://f-droid.org/en/packages/at.bitfire.davdroid/][DAVx5]] app on Android).
+
+* The Importance of Client Ubiquity
+I 💙 =org-mode= and Emacs for *so many reasons*. It has fundamentally changed the way that I interact with information and manage knowledge. However, it's always been a poor choice as a project and todo list manager for me for one big reason:  *lack of interfaces*. I *love* using =org-mode= in Emacs on my peronal laptop, and I love all of the tools that make is easy for me to manage my tasks and agenda. It's like driving a race in a sleek sports car that is also a hover craft and a submarine and runs on sunshine. But as soon as I walk away from that laptop that amazing interface is replaced by a bicycle at best and a scooter at worst.
+
+Let's start with accessing my todo list from my work laptop. Since all of =org-mode='s content is stored in text files (which is one of its best features) I would need to sync my =org-mode= files between my work and personal laptops. This is rarely an option in most organizations for security reasons.
+
+I'm therefore forced to use a tool with a web interface like [[https://organice.200ok.ch/][organice]], which is a modern, excellent web interface for =org-mode= files that accesses them using WebDAV or Dropbox integration. And I must admit that organice really is a robust, beautiful and useful application. But Emacs users are used to an incredibly powerful and programmable interface with a ludicrously rich ecosystem of add-ons. You really can't expect a web application, even one as good as organice to even come close to what Emacs can do today for /at least/ another 20 years.
+
+Storing your tasks in a CalDAV-compliant server gives you the ability to easily manage your todo lists on any system in a simple, transparent way. And if that CalDAV server and client happens to be Nextcloud, you have a lot of very good options for managing those todo's using a variety of workflows without any additional configuration required.
+*  Special Note About Syncing Deck Boards
+Deck boards aren't actually stored as conventional CalDAV calendars - they are stored as task lists, and unfortunately they're the type of task lists to which DAVx5 /can't/ write. So when you using 3rd-party, non-Nextcloud apps like [[https://play.google.com/store/apps/details?id=org.withouthat.acalendarplus&hl=en_US&gl=US][aCalendar+]] and OpenTasks you can't update tasks that exist as boards or lists in Deck, which means you can't use those apps to update project to-do's (if you're using my project management workflow that is).
+
+The good news is that you can still /see/ those tasks in those apps, meaning that they're still part of your daily agenda and you will receive notifications about them on your phone. Also, the Deck app for Android is very good and that /doesn't/ use davx5 for syncing - it updates the boards directly. So you do still have an interface on my phone to update those tasks/cards, and a very good one at that. You just need to jump from one app to another to make it happen.

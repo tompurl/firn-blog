@@ -1,0 +1,22 @@
+#+TITLE: Reasons For Not Writing Your API Tests In Postman
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: postman robotframework testing
+#+date_created: <2020-04-14 Tue>
+
+/This post was initially posted on 4/14/2020/
+
+A co-worker of mine recently asked me why I prefer to write automated REST API tests using the [[https://robotframework.org/][Robot Framework]]. Specifically, he couldn't understand why I didn't just automate everything using [[https://www.postman.com/][Postman]], which is a very popular way of doing such things.
+
+I was a little surprised by what I told him and thought that this may help other so I here's my rationale. If I'm wrong I'm sure someone will let me know :-)
+
+1. Postman doesn't really support the idea of a *"setup" and "teardown" functions*. The closest analogues are "pre-request scripts" and "Tests". These are good at a request level, but a test case is often larger than just one request. I'm a huge fan of how Robot Framework handles test case and suite-level setup and teardown functionality and how you can configure it as an annotation.
+
+2. Code that you write in the "pre-request scripts" and "tests" sections *can't easily be modularized into external libraries*. So for example, if each request requires you to run 10 lines of JS as a pre-request script, then you're copying and pasting that JS into each and every request. If you need to make a change to that JS, then you need to copy and paste the new JS into each request. This makes things very difficult to maintain.
+
+3. It's difficult to *follow the workflows of a Postman test suite*. Let's say that you want to run request #1 before you run request #2, and if everything works then run request #3. Then let's say that you want to run request #4, then 2 and 3. I've seen examples on how to do this but it's very, very kludgy and I wouldn't want to maintain those scripts or follow that bouncing ball.
+
+4. The response I've seen to #3 is that you just *simplify* your test cases as much as possible and then *put everything else you test needs to do in JS*. But then that takes us back to #2.
+
+So what is Postman good for? To me, the killer feature of Postman is that you can "kick the tires" of your API and then write your test using a single tool that is nearly ubiquitous. And I agree that Postman is by far the best tool I've found for quickly poking and prodding a REST API.
+
+So I guess what I'm saying is, when it comes to prototyping REST calls, Postman is hard to beat. However, if I want to actually write a formal test suite that is easy to read, write, and maintain, I would much rather use a "real" programming language bundled with a good test runner (both of which are included in the Robot Framework).

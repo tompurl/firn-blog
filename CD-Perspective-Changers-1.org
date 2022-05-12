@@ -1,0 +1,27 @@
+#+TITLE: Continuous Delivery Perspective Changers Part 1 - Releasing Any Version to Any Environment
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: cicd brainbender
+
+I am in the process of reading *Continuous Delivery: Reliable Software Releases through Build, Test, and Deployment Automation* by David Farley and Jez Humble. Most of the principles in the book align with what I've learned as a technical professional for the last 20 years, but occasionally I'll see something that bends my brain a bit. Here's an example of that from the first chapter:
+
+#+BEGIN_QUOTE -r
+The aim of the deployment pipeline is threefold. First, it makes every part of the process of building, deploying, testing, and releasing software visible to everybody involved, aiding collaboration. Second, it improves feedback so that problems are identified, and so resolved, as early in the process as possible. Finally, it enables teams to *deploy and release any version of their software to any environment at will through a fully automated process.*
+#+END_QUOTE
+
+The reason why this seems so strange to me is that I'm used to the following workflow:
+
+1. Build out the mostly-static prod and non-prod environments ahead of time using IAC
+   a. Example: A set of Ansible playbooks that build out a Stage and Prod environment
+2. Develop an application and automated build process that does things like run tests
+   a. Example: A Django application that is built and tested using a Makefile
+3. Write a Pipeline script that is able to run your Makefile and deploy the resulting build to one of the static environments from step 1.
+   a. Example: A Jenkins Pipeline that is running within a Jenkins server that was created /before/ step 1
+
+However, my interpretation of "releasing any version to any environment is" is that I can deploy *any arbitrary version of my app* to a *completely new environment*, run my tests, and then *throw that environment away*. Oh, and *all of the code* that does that should *live within my app's repo*.
+
+So I guess my questions at this point are...
+
+1. What's a good "starter" framework for creating a new environment on-demand that can run my app?
+2. Am I making this too complex? Should I just use what's built into Gitlab or Github and replace a few days of work with 5 good lines of config?
+
+Unfortunately I don't think this topic is covered until Chapter 13, and I'm on Chapter 2. Oh well, it good motivation to get back to work 😼

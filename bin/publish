@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -e
+
+(cd ~/Nextcloud/Documents/org/firn && \
+    firn build && \
+    rsync -av --progress _firn/_site/ blog: )

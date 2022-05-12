@@ -1,0 +1,41 @@
+# site-wide configuration:
+site:
+  # your site url; this will become a localhost url when using `firn serve`
+  url: "https://blog.tompurl.com"
+  # site title
+  title: "Tom Purl's Web Site"
+  # your site description.
+  description: "My '83 Datsun on the side of the information superhighway"
+  # directories to ignore org files in when rendering.
+  ignored_directories: []
+  # relative root to a folder where org attachments are stored
+  data_directory: "data"
+  # deletes all unlinked attachments from _site folder after build
+  clean_attachments: false
+  # can be "scss" or "sass"
+  sass: "scss"
+
+# Per-file customization:
+# currently not possible, but eventually users will be able to
+# control rendering variables on a per-file basis.
+file:
+  table_of_contents: "no"
+  todo_keywords: ["TODO", "DONE"]
+
+# Tags ---
+
+tags:
+  # enable this if you want Firn to create an html page for every tag you have;
+  # the contents of which can be customized in the [tags].html file Firn generates
+  create_tag_pages: true
+
+  # customize this to be the path that tags are filed under. Do this if you want to use
+  # a word other than "tags" (such as "subjects" or "categories").
+  # note: must end in a forward slash.
+  url: "tags/"
+
+  # Set `org` to true if you want to create a [tag].html page for every *org-mode* tag.
+  org: false
+
+  # Set `firn` to true if you want to create a [tag].html page for every *firn_tag* front matter.
+  firn: true

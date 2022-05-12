@@ -1,0 +1,59 @@
+#+TITLE: How Should Acceptance Tests Be Executed After a Deployment?
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: testing
+
+* Overview
+
+This may be a bit wonky but it's a surprisingly important issue at a lot of companies that don't have a dedicated QA department:
+
+#+BEGIN_QUOTE -r
+How do we ensure that our system is "green" after deploying a new feature? Who is responsible for running the tests and what should those tests include?
+#+END_QUOTE
+
+Many developers ask the same question this way:
+
+#+BEGIN_QUOTE -r
+Why do I have to be online at 2 AM to *manually* test my feature after it is deployed?
+#+END_QUOTE
+
+I've heard this question so many times that I thought I would write down my high-level answer. The answer isn's complicated, and its implementation isn't difficult. However, it's difficult to implement by many companies because it requires a coordinated effort across 3 groups of your product development team.
+
+*  Step 1 - Creating user acceptance criteria
+
+Acceptance tests enforce how the user will interact with our system. But before you create those you need the acceptance criteria. It is up to the "holy trinity" (PO, Developer, Tester) to define these at story creation time. They also need to be updated if the spec for the story changes by the same people. The [[https://martinfowler.com/bliki/SpecificationByExample.html][Specification by Example]] process is a good, light-weight and cheap way of doing this.
+
+For most software, 99% of the time the acceptance criteria should be **testable**. You can't have testable acceptance criteria without writing more atomic, succincnt and well-defined stories. Without good stories you can't have good tests, and the ripple effects are very, very expensive.
+
+One heuristic for creating testable acceptance criteria is [[https://automationpanda.com/2020/02/21/4-rules-for-writing-good-gherkin/][Gherkin]]. It gives you a shared syntax for specifying requirements and makes it possible to generate automated tests. But there are other options for this too.
+
+* Step 2 - Creating the user acceptance tests
+
+This is also the responsibility of the holy trinity. These tests can either be manual or automated. This is a tremendous understatement. Of course they should be automated. That will save you tons of money and time. No seriously.
+
+These tests impersonate the customer and ensure that the happy path scenarios are properly implemented. They also ensure that the app reacts properly in unhappy path scenarios.
+
+These tests should be:
+
+-   Cheap
+-   Lightweight
+-   Cheap
+-   Fast
+-   Test only what is necessary
+    -   i.e., if the story doesn't involve a UI change don't use the UI to test the story
+-   Cheap
+-   Automated
+-   Cheap
+
+These tests need to run at deployment time.
+
+* Step 3 - Test Execution and Profit
+
+If the acceptance tests aren&rsquo;t automated then they need to be executed by a member of the holy trinity at the time of deployment. This option is:
+
+-   Expensive
+-   Error-prone
+-   Slow
+-   Expensive
+-   Hated by everyone
+
+ Otherwise we can add them to a deployment pipeline and execute them immediately after the deployment step.

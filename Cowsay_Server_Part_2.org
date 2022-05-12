@@ -1,0 +1,304 @@
+#+TITLE: Cowsay Server - Part 2
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: cowsayseries
+
+/This blog post was originally published on 2013/11/27/
+
+/(This article is part 2 of 3 of my [[./tags/cowsayseries.html][Cowsay Series]] of articles./)
+
+This is the second post in a series of articles about writing my first application that uses sockets. For more information about why I'm doing this or how, please see [[https://blog.tompurl.com/cowsay-server-part-1][my first article]].
+
+* More Functional Requirements
+
+I have a working server, but there are two things that bug me about it:
+
+1. I have to test it using =netcat=, which is good for simple stuff but things would be much easier with an actual client.
+2. Right now, the server just process a "raw" string of commands. I would rather have the server interpret parameters.
+
+I figure that I'm going to need some type of "message format" to make requirement #2 work, so I first try to define that.
+
+* My Message Format
+
+Since I'm familar with HTTP, I decided to use a message format that is very similar. Right now, I simply want to be able to pass a message and cow body format to the cowsay server. I therefore decided to send messages that look something like this:
+
+#+BEGIN_SRC text
+MESSAGE This SUCKS!
+BODY beavis.zen
+#+END_SRC
+
+That's it. Just plain old text (unicode?) over the wire with two properties. In the future, I'll probably want to use return codes and more header options.
+
+* The Client
+
+Here's my first stab at a very simple client:
+
+[[https://gist.github.com/tompurl/7687021][Github Gist]]
+#+BEGIN_SRC ruby
+require 'socket'
+
+module CowSay
+    class Client
+        class << self
+            attr_accessor :host, :port
+        end
+
+        # Convert our arguments into a document that we can send to the cowsay
+        #>server.
+        #
+        # Options:
+        #   message: The message that you want the cow to say
+        #   body: The cowsay body that you want to use
+        def self.say(options)
+
+            if !options[:message]
+                raise "ERROR: Missing message argument"
+            end
+
+            if !options[:body]
+                options[:body] = "default"
+            end
+
+            request <<EOF
+MESSAGE #{options[:message]}
+BODY    #{options[:body]}
+EOF
+        end
+
+        def self.request(string)
+            # Create a new connection for each operation
+            @client = TCPSocket.new(host, port)
+            @client.write(string)
+
+            # Send EOF after writing the request
+            @client.close_write
+
+            # Read until EOF to get the response
+            @client.read
+        end
+    end
+end
+
+CowSay::Client.host = 'localhost'
+CowSay::Client.port = 4481
+
+puts CowSay::Client.say message: 'this is cool!'
+puts CowSay::Client.say message: 'This SUCKS!', body: 'beavis.zen'
+puts CowSay::Client.say message: 'Moshi moshi!', body: 'hellokitty'
+#+END_SRC
+
+This is really a very simple socket client. I have one real method called =say= which understands two keys, =message= and =body=. I then take those values, drop them in a heredoc, and then send that to the server.
+
+Of course, now that I'm using a new message format, I'm going to need to make some changes on the server too.
+
+* The Server, Part Two
+
+Here's my stab at creating a server that can read the new message format:
+
+[[https://gist.github.com/tompurl/7687067][Github Gist]]
+#+BEGIN_SRC ruby
+require 'socket'
+
+module CowSay
+    class Server
+        def initialize(port)
+            # Create the underlying socket server
+            @server = TCPServer.new(port)
+            puts "Listening on port #{@server.local_address.ip_port}"
+        end
+
+        def start
+            # TODO Currently this server can only accept one connection at at
+            # time. Do I want to change that so I can process multiple requests
+            # at once?
+            Socket.accept_loop(@server) do |connection|
+                handle(connection)
+                connection.close
+            end
+        end
+
+        # Find a value in a line for a given key
+        def find_value_for_key(key, document)
+
+            retval = nil
+
+            re = /^#{key} (.*)/
+            md = re.match(document)
+
+            if md != nil
+                retval = md[1]
+            end
+
+            retval
+        end
+
+        # Parse the document that is sent by the client and convert it into a
+        # hash table.
+        def parse(document)
+            commands = Hash.new
+
+            message_value = find_value_for_key("MESSAGE", document)
+            if message_value == nil then
+                $stderr.puts "ERROR: Empty message"
+            end
+            commands[:message] = message_value
+
+            body_value = find_value_for_key("BODY", document)
+            if body_value == nil then
+                commands[:body] = "default"
+            else
+                commands[:body] = body_value
+            end
+
+            commands
+        end
+
+        def handle(connection)
+            # TODO Read is going to block until EOF. I need to use something
+            # different that will work without an EOF.
+            request = connection.read
+
+            # The current API will accept a message only from netcat. This
+            # message is what the cow will say. Soon I will add support for
+            # more features, like choosing your cow.
+
+            # Write back the result of the hash operation
+            connection.write process(parse(request))
+        end
+
+        def process(commands)
+            # TODO Currently I can't capture STDERR output. This is
+            # definitely a problem when someone passes a bogus
+            # body file name.
+            `cowsay -f #{commands[:body]} "#{commands[:message]}"`
+        end
+    end
+end
+
+server = CowSay::Server.new(4481)
+server.start
+#+END_SRC
+
+There's a few things that I added to this code:
+
+-  Before sending the message to the =process= method, I now have to parse it.
+-  The =parse= method simply grabs the =MESSAGE= and =BODY= values with some help from the =find_value_for_key= method and then performs some very simple validation.
+-  The =process= method now does some *very* rudimentaryn parameterization. Eventually I would like some more safeguards in place to ensure that bad input cannot be passed to the =cowsay= executable, but for now this will do.
+
+* Testing
+
+First, let's take a look at some "happy path" testing. In your first window, execute the following command:
+
+#+BEGIN_SRC sh
+ruby server.rb
+# Returns 'Listening on port 4481'
+#+END_SRC
+
+Great. Now in another window, execute the following command:
+
+#+BEGIN_SRC sh
+ruby client.rb
+#+END_SRC
+
+#+BEGIN_SRC text
+ _______________
+< this is cool! >
+ ---------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+ _____________
+< This SUCKS! >
+ -------------
+   \         __------~~-,
+    \      ,'            ,
+          /               \
+         /                :
+        |                  '
+         _| =-.     .-.   ||
+         o|/o/       _.   |
+         /  ~          \ |
+       (____@)  ___~    |
+          |_===~~~.`    |
+       _______.--~     |
+       \________       |
+                \      |
+              __/-___-- -__
+             /            _ \
+ ______________
+< Moshi moshi! >
+ --------------
+  \
+   \
+      /\_)o<
+     |      \
+     | O . O|
+      \_____/
+#+END_SRC
+
+Nice. Let's also try a quick test using =netcat=:
+
+#+BEGIN_SRC sh
+echo "MESSAGE Oh YEAH\nBODY milk" | nc localhost 4481
+#+END_SRC
+
+...which should return:
+
+#+BEGIN_SRC text
+ _________
+< Oh YEAH >
+ ---------
+ \     ____________
+  \    |__________|
+      /           /\
+     /           /  \
+    /___________/___/|
+    |          |     |
+    |  ==\ /== |     |
+    |   O   O  | \ \ |
+    |     <    |  \ \|
+   /|          |   \ \
+  / |  \_____/ |   / /
+ / /|          |  / /|
+/||\|          | /||\/
+    -------------|
+       |  |  |  |
+      <__/    \__>
+#+END_SRC
+
+And now for the unhappy path. What happens if I pass a "body type" that the =cowsay= server doesn't recognize?
+
+#+BEGIN_SRC sh
+echo "MESSAGE Boom goes the dynamite\nBODY bogus" | nc localhost 4481
+#+END_SRC
+
+The client exits normally, but I see the following error message in the console window in which the server is running:
+
+#+BEGIN_SRC text
+cowsay: Could not find bogus cowfile!
+#+END_SRC
+
+It looks like the =STDERR= from the =cowsay= process is only being written to the console. In the future, I'll need to capture that and make the server appropriately.
+
+What if I don't pass a message?
+
+#+BEGIN_SRC sh
+echo "BODY default" | nc localhost 4481
+#+END_SRC
+
+In this case, the client freezes. I then see the following error in the server console window:
+
+#+BEGIN_SRC text
+ERROR: Empty message
+#+END_SRC
+
+The server then becomes unresponsive. This is *definitely* the first bug that I will need to fix in my next revision.
+
+* Conclusion
+
+I'm happy with the progress of my little socket server and client. In my next revision I am going to focus on the following:
+
+-  Having the server handle bad input gracefully
+-  Making sure that the server is able to respond in a predictable, informative way when it experiences issues
+-  Finally ditching the backticks and executing the =cowsay= process in a more robust way.

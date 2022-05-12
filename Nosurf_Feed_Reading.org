@@ -1,0 +1,76 @@
+#+TITLE: My NoSurf Method Of Keeping Up With My Stories
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: matrix rss chat bots
+
+* A Solution In Search Of a Problem
+
+I like to read a lot of different media sources including blogs, forums and a few choice Twitter feeds. To keep all of those feeds in one place (and be [[https://nosurf.net/][Nosurf]] Neddy) I have traditionally used a wonderful service called [[https://feedbin.com/][Feedbin]]. Not only can I use it ot follow many blogs and forums with RSS feeds, I can also use it to follow feed sources that don't use RSS like Twitter. It's very inexpensive, has a wonderful interface that works well on my phone, and has worked flawlessly for me for years.
+
+But like I often say, I guess my life isn't complicated enough. So I recently took a stab at using the [[https://en.wikipedia.org/wiki/Element_(software)][Element]] chat client as the interface for all of my feeds. I'm very happy with the results so I thought I would share how I did it.
+
+* Workflow
+
+The idea of using a chat client to keep up with your feeds may sound a bit foreign so here's basically how I do it.
+
+1. I invite a [[https://github.com/maubot/maubot][Maubot]]-based RSS bot to a chat room (e.g. "Fun Feeds")
+   a. I only have to do this once after creating a room
+2. I ask the bot to subscribe to a feed using a command like the following:
+   a. =!rss subscribe https://www.reddit.com/r/aww.rss=
+   b. I only have to do this once for each feed
+
+Now the bot will periodically scan all of my subscripitons and post them as new chat messages. Easy-peasy.
+
+#+CAPTION: Screen shot of my fun feeds chat room in the Element client
+[[https://static.tompurl.com/images/element-fun-feeds-screenshot.png]]
+
+But what about feeds that don't use RSS (e.g. Twitter)? For that I use a proxy called [[https://github.com/rss-bridge/rss-bridge][RSS-Bridge]], which generates RSS feeds for dozens of non-RSS sites on-demand.
+
+* Architecture
+
+** Chat
+
+I use the *excellent* chat client [[https://element.io/][Element]] (which used to be called Riot) on both my laptop and my phone. This is the official client for the [[https://matrix.org/][Matrix chat network]]. I run my own server but you certainly don't have to. You can use the official Matrix server for free or rent one for $5 a month.
+
+** Bot "Server"
+
+You need a place where you can run the bot at all times. I have a server on my private home network (David) where I run a Maubot Docker image. When this container is started it logs into a Matrix homeserver and starts monitoring its rooms.
+
+Please note that when I say "server" I mean "computer that runs all of the time". This computer does *not* need to be accessible from the outside world. Maubot is a client that uses Matrix as a server, not the other way around.
+
+** RSS-Bridge Proxy
+
+I also need a to run the RSS-Bridge software on a computer that runs all of the time. The good news is that this "server" only needs to be accessible by the bot, so you can run them both on the same machine. I therefore also run this software on David as a Docker container.
+
+* Setup
+
+** Maubot
+
+The most important part to remember is that a bot is just a daemon that can log into a chat account. It *doesn't* need to be installed on the same host as your chat server. However, in Maubot's case it *does* need to be configured using a web interface. Which seems unnecesarily complex and confusing to me. Having said that, once you figure it out the web interface is very easy to use and powerful.
+
+The docs [[https://github.com/maubot/maubot/wiki/Usage][here]] for setting up Maubot are very good and complete, if a bit non-intuitive. Make sure you read the doc completely a few times before attempting to setup a bot.
+
+** RSS-Bridge
+
+RSS-Bridge was also a little confusing. For example, let's assume that I want to subscribe to the [[https://twitter.com/danagould?lang=en][@danagould]] Twitter feed. After enabling the Twitter bridge I can interact with it using a very nice web interface. The only problem is, the web interface doesn't return the URL that I need to access the RSS feed. Intead it returns the *results* of visiting that URL. To build the URL you have two choice:
+
+1. Read the [[https://github.com/rss-bridge/rss-bridge/wiki/Actions][actions]] docs on building URL's
+2. Use your browser's developer tools to peek at the URL that was used to return the RSS results
+
+#+CAPTION: Screenshot of Twitter bridge for RSS-Bridge
+[[https://static.tompurl.com/images/rss-bridge-twitter-screenshot.png]]
+
+* Lessons Learned
+
+** I Experience Less FOMO
+
+Most RSS readers present unread posts like files in a folder or messages in an inbox. Seeing everything that I didn't have time to read used to give me a bad case of FOMO.
+
+Now if I don't check my feed chat rooms for a week I just don't see messages I'm missing. Sure, I *could* scroll up 15 pages and see everything, but why would I when ignorance is bliss?
+
+** Everything is surprisingly stable
+
+Since this solution is so relatively complex I was worried that it would decay pretty quickly. But I'm happy to say that everything has survived a few reboots.
+
+** The Matrix Ecosystem Keep Getting Better
+
+Element has improved *dramatically* over the last 18 months and it now very polished. If you don't like it then there's also a large list of alternataive clients. If only I could hook in Discord and Slack bridges then I could use one excellent interface for all chats and feeds.

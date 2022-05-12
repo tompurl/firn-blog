@@ -1,0 +1,175 @@
+#+TITLE: Cowsay Server - Part 3
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: cowsayseries
+
+(/This blog post was originally published on 2013/11/29 and is part 3 of 3 of my [[./tags/cowsayseries.html][Cowsay Series]] of articles./)
+
+This is the third post in a series of articles about writing my first application that uses sockets. For more information about why I'm doing this or how, please see my [[file:https:/write.as/tompurl/cowsay-server-part-1][firt article]].
+
+* Now With Rspec And STDERR!
+
+Wow, that is not a sexy heading :-)
+
+When I left off last time, I had a server that worked pretty well as long as you it could parse everything that you sent to it. However, once things got a little funny, the client or server would simply fail.
+
+There's a lot that I want to change about the socket-oriented aspects of the server (i.e. how it handles EOF's), but it was bugging the heck out of me that this thing was so brittle. So I had to fix that first.
+
+Also, I got tired of running a bunch of functional tests by hand every time I added a new feature or refactored something, so I decided to try this computer automation thing that all of the kids are doing. I'll talk more about how I used RSpec\_ to do this later in the article.
+
+Oh, and since my "project" has *3 whole files* now and, like, *dozens* of lines of code, I've decided to actually host it as a project on Github. You can see it here:
+
+-  [[https://github.com/tompurl/cowsay-server]]
+
+* Using Popen3 To Improve Security and Error-Handling
+** Fixing My Command Injection Bug
+
+In my last iteration, I executed cowsay using the following line of code:
+
+#+BEGIN_SRC ruby
+`cowsay -f #{commands[:body]} "#{commands[:message]}"`
+#+END_SRC
+
+One of the problems with this code is that it makes it very easy to "inject" commands that have nothing to do with cowsay.
+
+For example, here's a simple way to invoke cowsay using a heredoc:
+
+#+BEGIN_src sh
+cat <<EOF | nc localhost 4481
+MESSAGE Hi
+BODY hellokitty
+EOF
+#+END_SRC
+
+This would give us the following:
+
+#+BEGIN_src text
+STATUS 0
+
+ ----
+< Hi >
+ ----
+ \
+  \
+     /\_)o<
+     |      \
+     | O . O|
+      \_____/
+#+END_SRC
+
+In this example, the line of code above would interpolate to this:
+
+#+BEGIN_SRC ruby
+`cowsay -f hellokitty "Hi"`
+#+END_SRC
+
+Everything looks good so far, but what if someone sent the following string to netcat:
+
+#+BEGIN_SRC sh
+cat <<EOF | nc localhost 4481
+MESSAGE Hi"; sleep "5
+BODY hellokitty
+EOF
+#+END_SRC
+
+It's possible that the line of code could interpolate to this:
+
+#+BEGIN_SRC ruby
+`cowsay -f hellokitty "Hi"; sleep "5"`
+#+END_src
+
+This actually works. If you run the netcat command above against [[https://gist.github.com/tompurl/7687067][this version]] of the server.rb file, then it will sleep for 5 seconds before it returns the output of cowsay.
+
+Of course, sleeping for 5 seconds isn't really the worst case scenario. An attacker could inject a shell command that does things like *delete important files* or *install malicious code*.
+
+The solution to this problem is simple and time-tested - *parameterize your input*. Here's my new version of the code that executes the cowsay command:
+
+#+BEGIN_SRC ruby
+def process(commands)
+  output = nil
+  err_msg = nil
+  exit_status = nil
+
+  Open3.popen3('/usr/games/cowsay', '-f', commands[:body], commands[:message]) { |stdin, stdout, stderr, wait_thr|
+    # TODO Do I need to wait for the process to complete?
+    output = stdout.read
+    err_msg = stderr.read
+    exit_status = wait_thr.value.exitstatus
+  }
+
+  if exit_status != 0 then
+    output = "ERROR #{err_msg}"
+  end
+
+  return exit_status, output
+end
+#+END_SRC
+
+This is a bit more complex than the previous one-liner, so here's a quick summary of what I'm doing:
+
+-  I use the popen3 method to execute cowsay command.
+-  I *parameterize* my options and arguments by separating them with commas. By doing so, I'm no longer passing my command to the shell, which means significantly fewer options for command injection.
+
+Now let's try my "sleepy" version of the netcat command above with the new version of server.rb:
+
+#+BEGIN_SRC sh
+cat <<EOF | nc localhost 4481
+MESSAGE Hi; sleep 5
+BODY hellokitty
+EOF
+#+END_SRC
+
+...whichwould give you this:
+
+#+BEGIN_SRC text
+STATUS 0
+
+  _____________
+ < Hi; sleep 5 >
+  -------------
+  \
+   \
+      /\_)o<
+      |      \
+      | O . O|
+      \_____/
+#+END_SRC
+
+Hooray! No more shell games.
+
+** Handling Non-Fatal Errors
+
+The last version of my server.rb file did a really poor job handling really rudimentary parsing errors. For example, if you didn't pass the MESSAGE heading properly, the server would write a message to the STDERR and then freeze. Also, if you messed up your BODY heading, the server would simply write a message to its console. This is not terribly helpful for your client.
+
+I needed a way to convey error messages to the client. I therefore decided on the following conventions:
+
+-  I would always return a STATUS heading. If everything was processed properly, this code would always be 0. Otherwise, it would be some number greater than 0.
+
+-  If the STATUS is 0, then an ascii art picture would be returned. Otherwise, and error message would be returned.
+
+Now when the MESSAGE heading is malformed I can simply send an error message back to the client with the appropriate status from the parse method.
+
+Grabbing the status code and error message from the cowsay command is easily accomplished using the popen3 method in the code example above. This command makes it easy to read the STDOUT and STDERR file handles along with the status code returned by the cowsay process. All I have to do then is test if the status code is > 0, and if it is, return the contents of STDERR.
+
+* Automated Functional Testing Made Simple
+
+Now that my little script is actually starting to flirt with the idea of usefulness, I found that I was running a lot of manual tests against it. Of course, running these tests was error prone and labor intensive, so I finally tried to find some way test the code in an automated way.
+
+The solution was writing a half-dozen RSpec tests, which was much easier than I thought it would be. As a matter of fact, it only took half an hour to cover all of the tests that I needed, which will probably save me at least an hour this week alone.
+
+Here's the [[https://github.com/tompurl/cowsay-server/blob/67e89ed6ecac806f99e082838b72308fdb96c40c/cowsay-spec.rb][current version of cowsay-spec.rb]]. To run the tests, this is all that I have to type:
+
+#+BEGIN_src sh
+rspec cowsay-spec.rb
+#+END_SRC
+
+One nice thing about RSpec is that it's very easy to read. Even if you're not a programmer, you can probably infer what I'm doing.
+
+Also, please note that I'm *not* using the cowsay client.rb file to drive these tests. I figured that if any network client written in any language can interact with the cowsay server, then it makes the most sense to test it using "raw" sockets. And the easiest way for me to do that is to shell out a call to netcat..
+
+Seriously, I should have done this at the beginning. It's already saving me a ton of time, and it's so easy to use.
+
+* Conclusion
+
+I finally feel like I'm getting close to something that is actually useful. I can handle errors in a robust and intuitive way, and I can now test any new or updated features very quickly and easily.
+
+Next, I'm going to focus on improving the way that streams are read and written by the client and server. Once that's done, I believe that I will have developed this project as much as I can.

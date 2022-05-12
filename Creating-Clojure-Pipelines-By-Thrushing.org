@@ -1,0 +1,78 @@
+#+TITLE: Creating Clojure Pipelines By Thrushing
+#+firn_tags: clojure
+
+Clojure has a few fun macros that help your *thread an expression through one or more forms*. These macros are also sometimes referred to as the  *thrush operators*. Here's a few:
+
+- [[https://clojuredocs.org/clojure.core/-%3E][->]]
+- [[https://clojuredocs.org/clojure.core/-%3E%3E][->>]]
+
+/(There are more of these, but this is a good place to start. And damn are they hard to find using a search engine. Save yourself some grief and just bookmark [[https://clojuredocs.org/][ClojureDocs]].)/
+
+Here's basically what I *think* they do. In functional programming you tend to think "inside-out". That is, you start manipulating your data in the *middle* of your code and then send those results to one or more wrapping functions.
+
+So for example, let's say you wanted to know how much to tip for a check, and you prefer to calculate the amount based on the post-tax total. The conventional way to do that with a functional language is like this:
+
+#+BEGIN_SRC clojure
+user> (def amount 20.00)
+;; => #'user/amount
+user> (def sales-tax 0.075)
+;; => #'user/sales-tax
+user> (def tip-percetage 0.2)
+;; => #'user/tip-percentage
+user> (* (+ (* amount sales-tax) amount) tip-percentage)
+;; => 4.3
+#+END_SRC
+
+To read that code you would first look at the innermost expression, =(* amount sales-tax)=. You would then take the result of that operation (a sequence of even numbers) and pass that to the =+= function.
+
+This is a bit unfamiliar to people who are used to shell scripting, which depend upon pipelines. Here's an example:
+
+#+BEGIN_SRC bash
+ps auxwww | grep -v grep | grep firefox
+#> tom         5572  4.0  9.3 6142372 726572 ?      Sl   Dec28 179:09 /usr/lib/firefox/firefox
+#+END_SRC
+
+Here, the output of the first command, =ps auxwww= is passed to the first =grep= command, which filters out any line containing the *string* "grep" using the =-v= flag. Then that output is sent to the *second* =grep= command, which filters out everything /except/ the lines containing the string *firefox*.
+
+You could argue that the shell pipeline is a bit easier to read, because it goes left-to-right. There isn't really any nesting. And that's what I *believe* the thrush operators are for - making it easier to specify how you want to *manipulate your data in a pipeline*.
+
+So here's the Clojure example again, this time with a thrush operator:
+
+#+BEGIN_SRC clojure
+user> (-> amount
+    (* sales-tax)
+    (+ amount)
+    (* tip-percentage))
+;; => 4.3
+#+END_SRC
+
+This evaluates to this:
+
+#+BEGIN_SRC clojure
+user> (use 'clojure.walk')
+;; => nil
+user> (macroexpand-all '(-> amount (* sales-tax) (+ amount) (* tip-percentage)))
+;; => (* (+ (* amount sales-tax) amount) tip-percentage)
+#+END_SRC
+
+...which is *exactly* what we had above. Just easier to read. Also, how cool is the =macroexpand-all= function? I'm so happy to have learned about this today.
+
+The difference between =->>= and =->= was a bit confusing to me at first, but it ll has to do with where the *expr* is placed in the following forms. Here's an example:
+
+#+BEGIN_SRC clojure
+user> (def c 5)
+;; => #'user/c
+user> (-> c (+ 3) (/ 2) (- 1))
+;; => 3
+user> (->> c (+ 3) (/ 2) (- 1))
+;; => 3/4
+user> (macroexpand-all '(-> c (+ 3) (/ 2) (- 1)))
+;; => (- (/ (+ c 3) 2) 1)
+user> (macroexpand-all '(->> c (+ 3) (/ 2) (- 1)))
+;; => (- 1 (/ 2 (+ 3 c)))
+#+END_SRC
+
+- =->= places =c= as the *second* item in all forms (i.e. right after the function name)
+- =->>= places =c= as the *last* item in all forms
+
+Either way, I'm happy to have discovered these fantastic macros. I imagine it will make my Clojure code much simpler to imagine and read.

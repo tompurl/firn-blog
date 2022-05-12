@@ -1,0 +1,39 @@
+#+TITLE: Issues with Combining Sequences Using Clojure
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: clojure exercism
+
+I was working my way through the [[https://exercism.org/tracks/clojure/exercises/elyses-destructured-enchantments][Elyses Destructured Enchantments]] exercise in the Clojure track of the /excellent/ [[https://exercism.org/dashboard][Exercism]] training site and it really expanded my knowledge of [[https://clojure.org/guides/destructuring#_sequential_destructuring][sequential destructuring]] It's *very cool*, understanding the basics of that makes it much easier pass around sequences and understand other people's code.
+
+One side effect of working on this exercise was learning about *combining sequences* (i.e vectors, lists, and ordered sets). There are *tons and tons of functions* available in the standard library that do something like this and I had quite a bit of difficulty finding one that worked for this scenario.
+
+All I had to do was combine one or more numbers with a vector of strings. Should be easy right? Well, here's what I tried:
+
+#+BEGIN_SRC clojure
+user> (def strings ["one" "two" "three"])
+;; => #'user/strings
+user> (concat 9 strings)
+Error printing return value (IllegalArgumentException) at clojure.lang.RT/seqFrom (RT.java:553).
+Don't know how to create ISeq from: java.lang.Long
+user> (concat [9 strings])
+;; => (9 ["one" "two" "three"])
+user> [9 strings]
+;; => [9 ["one" "two" "three"]]
+user> (conj 9 strings)
+Execution error (ClassCastException) at user/eval13467 (form-init5656966070595896937.clj:47).
+class java.lang.Long cannot be cast to class clojure.lang.IPersistentCollection (java.lang.Long is in module java.base of loader 'bootstrap'; clojure.lang.IPersistentCollection is in unnamed module of loader 'app')
+user> (conj [9 strings])
+;; => [9 ["one" "two" "three"]]
+#+END_SRC
+
+Now take those lines, multiply it by 20 and add 5 or 6 other functions that *seem to be able* to do what I want and you'll begin to appreciate my frustration 😠 Some functions kindof worked (like =into=) but they didn't give me the ability control where I placed the number.
+
+And of course, the most frustrating part is that *this is supposed to be easy*. I'm sure I could write something requiring 3 or 4 functions to do this but manipulating lists is Clojure's bread and butter - there was certainly a very simple, idiomatic solution that I was missing.
+
+In the end I finally broke down and started Googling for other people's solutions and found the "magic function": =flatten=:
+
+#+BEGIN_SRC clojure
+(flatten [9 strings])
+;; => (9 "one" "two" "three")
+#+END_SRC
+
+Oh well, I'm glad I finally found this, and I'm assuming that I'll be using it a lot in the future.

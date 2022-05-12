@@ -1,0 +1,101 @@
+#+TITLE: Fun With KDE Neon
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: linux kde nix
+
+* tl;dr
+
+[[https://neon.kde.org/][KDE Neon]] is a fantastic, desktop-oriented Linux distribution. It is snappy, cohesive, and incredibly simple to install and configure for many purposes. Any user of KDE that wants something up-to-date that "just works" should consider it.
+
+* The Whys
+
+For the last year or so I've been using [[https://nixos.org/][NixOS]] on my personal laptop. It is an excellent, well-designed Linux distribution that is powered by the Nix package manager. I would tell you why this technology is so cool but I think [[https://nixos.org/explore.html][this page]] does a better job than I would.
+
+I, however, had the following issues running it on my personal laptop:
+
+- *Less than stellar multimedia support*: I spent hours trying to get Jack audion working, all to no avail for example.
+- *Difficulty with containers*: You have to use special workarounds to use technologies like Snaps, Docker, AppImage, and Flatpak. Often, these workarounds required more knowledge of derivations and the entire Nix ecosystem than I possessed, and I have trouble finding enough time to learn what was necessary.
+- *Many desktop app packages were broken*: Bitwarden is a good example. There's an official package (actually, they're called derivations with Nix) but it doesn't work, even after spending quite a bit of time troubleshooting.
+
+*Note*: This is /not/ a NixOS diss track 😺 NixOS is excellent for many uses and I still happily use the Nix Package Manager every day on other Linux distributions. It just wasn't ideal for this use case.
+
+So I needed something new that worked for *everything I wanted to do*, was *stupid-simple to setup*, and had *good support for KDE*. And that's why I tried *KDE Neon*.
+
+* What is it?
+
+[[https://static.tompurl.com/images/love-gbbc3b820b_640.jpg]]
+(Image by [[https://pixabay.com/users/publicdomainpictures-14/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=313417][PublicDomainPictures]] from [[https://pixabay.com/?utm_source=link-attribution&amp;utm_medium=referral&amp;utm_campaign=image&amp;utm_content=313417][Pixabay]])
+
+Here's the description from the project home:
+
+#+BEGIN_QUOTE -r
+The latest and greatest of KDE community software packaged on a rock-solid base.
+#+END_QUOTE
+
+This translates into the following stack:
+
+1. Ubuntu 20.04
+2. A "Neon" PPA that provides the latest and greatest KDE binaries
+
+So if you're familiar with the Ubuntu ecosystem you should be comfortable.
+
+* Laptop Info
+
+I use an *IBM Thinkpad T490*. it is light, has a very long battery life, is very durable and reasonably priced. However, it's not very powerful, but that's ok. If I need to run anything that requires more oomph then I run it on a remote server.
+
+Here's the "about this system" info:
+
+#+BEGIN_QUOTE -r
+Operating System: KDE neon 5.23
+KDE Plasma Version: 5.23.4
+KDE Frameworks Version: 5.89.0
+Qt Version: 5.15.3
+Kernel Version: 5.11.0-43-generic (64-bit)
+Graphics Platform: X11
+Processors: 8 × Intel® Core™ i5-8265U CPU @ 1.60GHz
+Memory: 7.4 GiB of RAM
+Graphics Processor: Mesa Intel® UHD Graphics 620
+#+END_QUOTE
+
+* First impressions
+
+** Very Simple Setup
+
+I think I clicked on about 4 or 5 buttons to install the OS. It was trivially simple. When it was done everything below was properly configured:
+
+- Wifi
+- My graphics card
+
+This may sound trivial but on a lot of distributions can make setting up these services cumbersome at best. i /still/ don't think that I properly configured my graphics card on my old system.
+
+** Package Management is Weird but Manageable
+
+I'm a big fan of Debian's package manager =apt=, which is *one* of the package mangers that this system uses. After the initial installation I tried upgrading things and got an interesting message:
+
+#+BEGIN_EXAMPLE
+$ sudo apt-get upgrade
+On KDE neon you should use `pkcon update` to install updates.
+If you absolutely must use apt you do have to use dist-upgrade or full-upgrade in place of the upgrade command.
+  https://neon.kde.org/faq#command-to-update
+Abort.
+#+END_EXAMPLE
+
+Uhhhh, ok. I've never heard of [[https://packagekit.freedesktop.org/][PackageKit]] before it appears to be yet another attempt at unifying all existing, Liunx-based package managers while also /extending/ those managers (which is the scary part to me).
+
+There's also a graphical package manager called [[https://apps.kde.org/discover/][Discover]] which also wraps =apt= *and* makes it easy to install [[https://www.flatpak.org/][Flatpaks]]. I haven't used it to install any apps yet but I /have/ used it to *update the firmware on my laptop*, which is something I've never seen a package manager recommend before. So that's actually quite nice.
+
+I do need to use a few [[https://snapcraft.io/about][Snaps]] and so far those have worked perfectly.
+** The KDE Integration is Flawless 👀 🍬
+
+[[https://static.tompurl.com/images/my-desktop-211216.png]]
+(My current desktop using the [[https://apps.kde.org/latte-dock/][Latte dock]] and the [[https://store.kde.org/p/1399346/][mcOS-Big-Sur-large]] layout.)
+
+I really like using KDE but in the past I've had the following issues:
+
+- My distribution shipped a fairly old version
+- I was unable to install add-ons or themes
+
+Both of these issues have eliminated with KDE Neon.I'm using the latest stable version of KDE and I have been able to effortlessly install lots of fun eye candy.
+
+** Performance and Snappiness is Good
+
+Like I said above my laptop is not exactly a speed demon. Thankfully I haven't had any performance issues or lockups yet. Everything feels *very fast and responsive*.

@@ -1,0 +1,12 @@
+#+TITLE: Fun With Exercism and Clojure
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: clojure exercism emacs
+
+
+Coding is my favorite *puzzle-solving* experience, and the best site I've ever found for coding exercises is [[https://exercism.org/][Exercism]]. Not only is it *free* to use, it has an excellent interface, *tons* of great exercises, and supports *dozens of languages*. Even Emacs lisp 🐃 Heck, you can even receive (or give) mentoring from volunteers for free. I *highly* recommend trying it out, no matter what level you are at as a programmer or hobbyist.
+
+I spent quite a bit of time on this site about a year and a half ago. I was very happy to see that the site has only improved during that time. The UX is even better and there are many more exercises.
+
+I decided to try the Clojure exercises again because it's the most enjoyable language I've ever used. It is concise, modern, functional, and integrates wonderfully with Emacs using [[https://docs.cider.mx/cider/1.2/index.html][Cider]]. Also, it gives me an excuse to re-read [[https://www.braveclojure.com/][my favorite programming book ever]].
+
+Anywho, I'm going to try and blog about what I learn from these exercises here. I hope some of the posts will help others learn as much as they will help me.

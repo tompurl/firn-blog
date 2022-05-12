@@ -1,0 +1,29 @@
+#+TITLE: About Me
+
+#+CAPTION: A cartoon of a small dog with my face
+[[https://static.tompurl.com/images/Tom_as_a_dog_small.jpg]]
+
+🐹🔥🤡🤖🐍🖥️🌯🍲
+
+Hi! I'm Tom, a he/him/his guy who likes to play with computers, cook, and play games with his family. This is my mostly tech blog where I share some of the cool stuff that I figure out.
+
+Here's where you can find me:
+
+| Service       | Address                                    | Notes                              |
+|---------------+--------------------------------------------+------------------------------------|
+| Matrix        | [[https://matrix.to/#/@tompurl:destrocodpiece.wtf][matrix.to/#/@tompurl:destrocodpiece.wtf]]    | This is my favorite way to chat    |
+| Session       | Contact me using one of the other channels | This is my second favorite :-)     |
+| Email         | [[mailto:tom@tompurl.com][tom@tompurl.com]]                            | I only check this once a day or so |
+| [[https://mastodon.technology/@tompurl][Mastodon]]      | @tompurl@mastodon.technology               | I rarely check this                |
+| GitHub        | [[https://github.com/tompurl][tompurl]]                                    |                                    |
+| Linkedin      | [[https://www.linkedin.com/in/tompurl/][tompurl]]                                    |                                    |
+| Stackexchange | [[https://stackexchange.com/users/45409/tom-purl][Tom Purl]]                                   |                                    |
+
+
+🐹🔥🤡🤖🐍🖥️🌯🍲
+
+Now for the boring part :-(
+
+#+BEGIN_QUOTE -r
+The opinions expressed here are solely my own and do not express the views or opinions of my employer.
+#+END_QUOTE

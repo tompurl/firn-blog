@@ -1,0 +1,275 @@
+#+TITLE: Cowsay Server - Part 1
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: cowsayseries
+
+/This blog post was originally published on 2013/11/12/
+
+(/This article is part 1 of 3 of my [[./tags/cowsayseries.html][Cowsay Series]] of articles./)
+
+I've read through [[http://www.jstorimer.com/products/working-with-tcp-sockets][Working With TCP Sockets]] a few times to improve my socket programming knowledge. I've administered software systems for a while now I know most of the basics, but there are definitely some gaps I should fill in. This book has been a great tool for helping me identify those gaps.
+
+However, there is only so much I can learn by reading about other people's code - I needed something that I could create and break and fix again to really understand the lessons from the book. I therefore decided to rip off [[http://devblog.avdi.org/][Avdi Grimm]] and create my own =cowsay= server.
+
+I always learn more when I write about what I'm learning, so I'm also going to blog about it. This post is the first in a series that will record the evolution of this script from a naive toy to something that someone else would actually consider using some day.
+
+* Requirements - Iteration 1
+
+First, I need to point out that I'm *not* creating a web application. I'm creating a lower-level server that communicates with its client using plain old sockets. This example is designed to teach me about *networking* in general, *not* HTTP programming.
+
+So what does that mean? Well, it means that I need to write our own server and client. Writing them both is a pretty tall order, and I've never even written one of these things before. What I need is some sort of naive "scaffold" that works well enough to provide feedback while I turn it into a "real" program.
+
+I therefore think that my first requirement is *to only write a server*. All client communication will be performed by the =netcat= program. I can worry about the client in a future iteration.
+
+My second and final requirement is that *the server just work*. I will put my ego on the bench for a little while and just write *working code* that I know has plenty of flaws and anti-patterns. I'm not writing the next Nginx here - I'm having fun and learning something new. Besides, there will be plenty of time to turn this into something that I can show off.
+
+* Code
+
+[[https://gist.github.com/tompurl/7435196][Github gist]]
+#+BEGIN_SRC ruby
+require 'socket'
+
+module CowSay
+    class Server
+        def initialize(port)
+            # Create the underlying socket server
+            @server = TCPServer.new(port)
+            puts "Listening on port #{@server.local_address.ip_port}"
+        end
+
+        def start
+            # TODO Currently this server can only accept one connection at at
+            # time. Do I want to change that so I can process multiple requests
+            # at once?
+            Socket.accept_loop(@server) do |connection|
+                handle(connection)
+                connection.close
+            end
+        end
+
+        def handle(connection)
+            # TODO Read is going to block until EOF. I need to use something
+            # different that will work without an EOF.
+            request = connection.read
+
+            # The current API will accept a message only from netcat. This
+            # message is what the cow will say. Soon I will add support for
+            # more features, like choosing your cow.
+            # TODO - Parse the request
+
+            # Write back the result of the hash operation
+            connection.write process(request)
+        end
+
+        def process(request)
+            # TODO This is just painfully naive. I'll use a different
+            # interface eventually.
+            `cowsay "#{request}"`
+        end
+    end
+end
+
+server = CowSay::Server.new(4481)
+server.start
+#+END_SRC
+
+The low-level details of this script are out of the scope of this blog post. If you're curious, then I do recommend the [[http://http://www.jstorimer.com/products/working-with-tcp-sockets][Working With TCP Sockets]] book. It's an excellent introduction.
+
+Thankfully, even if you don't know a bunch about socket programming, it's pretty simple to read Ruby code. Here's basically what is happening:
+
+1. A new server process is created in the =initialize= method.
+2. When the =start= method is called, the server waits for a client to try to connect. When that happens, we enter the =accept_loop= block and do something about it.
+3. In the =handle= method we read the contents of the request and then forward them on to the =process= method.
+4. Here, we "shell out" a call to the =cowsay= program that is on the server, passing it the contents of the request.
+5. Finally, the output of the =cowsay= program is sent back to the client in line 32.
+6. Oh wait, one more step. The program goes *back* to line 15 and waits for another request. The server will block until that happens.
+
+* Testing
+
+Like I said earlier, a proper client is out of the scope of this iteration, so we will test the script using =netcat=. Here's how everything works on my system.
+
+First, let's start the server:
+
+#+BEGIN_SRC sh
+ruby cowsays_server/server.rb
+#+END_SRC
+
+...which outputs:
+
+#+BEGIN_SRC text
+Listening on port 4481
+#+END_SRC
+
+Next, let's connect with our client:
+
+#+BEGIN_SRC sh
+echo "I like coffee" | nc localhost 4481
+#+END_SRC
+
+...which /should/ show you this:
+
+#+BEGIN_SRC text
+ ________________
+< I like coffee  >
+ ----------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+#+END_SRC
+
+Hooray! Working code.
+
+* So What's Wrong
+
+Lots it turns out. Here's some of the biggies.
+
+** EOF's
+
+If the client only sends part of a message and doesn't end with an EOF character then my server will just block, waiting for that character. If another request comes along while it's blocking, then that request will also wait until the first one is done, which will be never. Typically you don't want to make it possible for one malformed request to DOS your server :-)
+
+Here's what I mean. Start your server using the commands above and then try type this:
+
+#+BEGIN_SRC sh
+(echo -n "Made you break"; cat) | nc localhost 4481
+#+END_SRC
+
+You may notice that nothing will happen. This command sends a string with no newline at the end, which means no EOF command for the server. The =accept_loop= command will therefore wait for that command forever.
+
+Now type =CTRL-z= to stop that command and then type the following:
+
+#+BEGIN_SRC sh
+bg
+echo "Message 1" | nc localhost 4481
+#+END_SRC
+
+Still nothing happens. Your first command is still being handled by the server, so this second command will just sit patiently in the queue and wait. To prove everything that I've said so far, trying killing the first blocking command. Press =CTRL-z= again and then the following commands:
+
+#+BEGIN_SRC sh
+bg
+kill %1
+#+END_SRC
+
+You should see something like the following:
+
+#+BEGIN_SRC text
+[1]  + 31288 terminated  ( echo -n "Made you break"; cat; ) |
+       31289 terminated  nc localhost 4481
+
+$  ____________
+< Message 1  >
+ ------------
+        \   ^__^
+         \  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
+
+[2]  + 31356 done       echo "Message 1" |
+       31357 done       nc localhost 4481
+#+END_SRC
+
+What you just did was kill the first "job", which was the message that was missing an EOF. Our server is finally free to respond to our second request.
+
+** Command Injection Attacks
+
+Here's another fun way to break your server. Try sending the following command:
+
+#+BEGIN_SRC sh
+echo "--bogus" | nc localhost 4481
+#+END_SRC
+
+Your server should write something like this to your STDOUT:
+
+#+BEGIN_SRC text
+ nknown option: -
+ nknown option: o
+ nknown option: u
+ nknown option:
+#+END_SRC
+
+Obviously, my code has *no* idea how to handle command line options that are disguised as a message. Also, now I won't be able to use the server again until I restart it. Lame.
+
+In a future iteration, I'll actually need to parse request input and handle error codes and messages sent to STDERR. Backticks just aren't going to cut it.
+
+** Performance
+
+Performance isn't *super* important for a server like this, but it's still useful to see how a sever like this performs when more nthan one person is actually trying to use it at the same time. But how do you performance test a server like this?
+
+#+BEGIN_SRC sh
+for num in $(seq 5); do echo "Test #$num" | nc localhost 4481 &; done
+#+END_SRC
+
+This command may be a little scary looking since it's an inline loop. Here's how that command is actually expanded by the shell:
+
+#+BEGIN_SRC sh
+echo "Test #1" | nc localhost 4481 &
+echo "Test #2" | nc localhost 4481 &
+echo "Test #3" | nc localhost 4481 &
+echo "Test #4" | nc localhost 4481 &
+echo "Test #5" | nc localhost 4481 &
+#+END_SRC
+
+There are two key things to notice about these commands:
+
+-  Each command has it's own unique identifier. That will be important eventually.
+-  Each command is "backgrounded" by the ampersand (&) sign. This means that the shell will *not* wait for the command to finish executing before it moves on to the next command. This simple trick allows us to send the five requests to the sever in *very* quick succession, which makes them nearly simultaneous.
+
+So anywho, if you run the inline loop above, you should see 5 cows printed in quick succession. Great! Our server can handle 5 nearly-simultaneous requests.
+
+At this point though, you may be wondering if the requests were handled in order. Let's filter out everything but the "Test" message with this command:
+
+#+BEGIN_SRC sh
+for num in $(seq 5); do echo "Test #$num" | nc localhost 4481 &; done | grep Test
+#+END_SRC
+
+You should see output that looks something like this:
+
+#+BEGIN_SRC text
+< Test #1  >
+< Test #2  >
+< Test #3  >
+< Test #4  >
+< Test #5  >
+#+END_SRC
+
+Cool. Every command was executed in order. What is I were to double the number of near-simultaneous requests? Since we are running our test with an inline loop, all you have to do is change the "5" to a "10" like this:
+
+#+BEGIN_SRC sh
+for num in $(seq 10); do echo "Test #$num" | nc localhost 4481 &; done | grep Test
+#+END_SRC
+
+...which will output something similar to (but probably diffferent than) this:
+
+#+BEGIN_SRC text
+< Test #1  >
+< Test #2  >
+< Test #4  >
+< Test #3  >
+< Test #5  >
+< Test #6  >
+< Test #7  >
+< Test #10  >
+< Test #8  >
+< Test #9  >
+#+END_SRC
+
+Interesting. I have to assume that "Test #10" was actually executed after "Test #9", but apparently it was popped off of the accept queue first.
+
+Of course it's no fun to stress test something if you can't find a way to break it. So how many requests does it take? Well, by default Ruby's *listen queue* size is 5. This is the queue from which the =accept_loop= block grabs requests. I would imagine that 6 requests would cause at least one of my requests to fail. However, as we just saw above my server was easily able to handle 10 near-simultaneous requests.
+
+The other possibility is that the =accept_loop= method actually sets the listen queue size to the =SOMAXCONN= value, which is 128 on my system. So how would my server handle 129 requests? To find out, simply change the "10" to "129" in the previous command.
+
+On my system, the command executed without any errors. Granted, it took a few minutes to run, and you could definitely see some long pauses. But I guess the lesson learned is that even when we exceed the size of the listen queue, there seems to be enough idiot-proofing built into the Ruby runtime and Linux kernel to still make everything work eventually. Also, the long default TCP timeouts probably help.
+
+I even tried running the loop above with 10,000 requests, but the only error I got was that I filled my shell's job table. I really did not expect that. It looks like I need to find a better way to stress test this server.
+
+* Conclusion
+
+There's a lot more that I want to do with this server. Here's some stuff that I haven't mentioned yet:
+
+-  *Protcol Definition* - Eventually, I need to create a client and I should define some type of protocol that it can use to talk to the server.
+-  *Concurrency* - I would like to eventually make this a preforking server.
+-  *Support For Most Cowsay Features* - You should be able to use a different cow.
+
+I hope I was able to help someone else learn a little bit about socket programming. Thanks for reading!

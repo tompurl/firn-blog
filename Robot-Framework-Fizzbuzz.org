@@ -1,0 +1,73 @@
+#+TITLE: Fizzbuzz Using Robot Framework
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: robotframework programming
+
+/This post was originally published on 2019-10-17/
+
+* Overview
+The first thing I always try to do to learn a new language after writing "hello world" is implementing [[http://codingdojo.org/kata/FizzBuzz/][fizzbuzz]]. This wasn't true with the Robot Framework, so I thought I would be time to give it a try.
+
+* My Implementation
+
+#+BEGIN_SRC robot
+ ,*** Settings ***
+ Documentation    Fizzbuzz kata
+ Library    BuiltIn
+
+ ,*** Test Cases ***
+
+ Print Fizzbuzz
+     [Documentation]    Print the numbers 1-100 in the log.html file, replacing
+     ...                all numbers that are divisible by 3 with "fizz", 5 with
+     ...                "buzz", and if divisible by both "fizzbuzz".
+
+     Fizzbuzz
+
+ ,*** Keywords ***
+
+ Fizzbuzz
+     FOR    ${number}    IN RANGE    1    101
+         ${divisible_by_3}=    Is Mod Zero    ${number}    3
+         ${divisible_by_5}=    Is Mod Zero    ${number}    5
+         ${divisible_by_15}=   Is Mod Zero    ${number}   15
+         Run keyword if    ${divisible_by_15}    Log to Console    FIZZBUZZ
+         ...    ELSE IF    ${divisible_by_3}     Log to Console    FIZZ
+         ...    ELSE IF    ${divisible_by_5}     Log to Console    BUZZ
+         ...    ELSE    Log to Console    ${number}
+     END
+
+ Is Mod Zero
+     [Documentation]    Returns whether the modulus of two numbers is zero.
+     [Arguments]        ${dividend}    ${divisor}
+     [Return]           ${is_modulus_zero}
+     # Go-go gadget Python!
+     ${is_modulus_zero}=    Evaluate    divmod(${dividend},${divisor})[1] == 0
+#+END_SRC
+
+* Observations
+
+The first thing I learned from this exercise was how surprisingly difficult it was to evaluate the result of an expression. If I was running this in Python I would do something like this:
+
+#+BEGIN_SRC python
+for num in range(1, 101):
+    if num % 15 == 0:
+        print("fizzbuzz")
+    elif num % 3 == 0:
+        print("fizz")
+    elif num % 5 == 0:
+        print("buzz")
+    else:
+        print(num)
+#+END_SRC
+
+I can evaluate the =num % 3= part within the else statement using Python. But here’s what I *can’t* do using the Robot Framework:
+
+#+BEGIN_SRC robot
+Run keyword if    Is Mod Zero    ${number}    15   Log to Console    FIZZBUZZ
+...    ELSE IF    Run keyword and return status    Is Mod Zero    ${number}    3     Log to Console    FIZZ
+#+END_SRC
+
+
+I’m sure *something* like this is possible without creating a temporary variable (and evaluating the =Is Mod Zero= 3 times *every time*) but I’m not quite sure what it is.
+
+The second thing I learned was how easy it was to run a Python one-liner from Robot. If that didn’t work then I simply didn’t see how I was going to evaluate a modulus from Robot without writing a Python module (for a one-liner).
