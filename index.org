@@ -1,10 +1,14 @@
 #+TITLE: ➡➡ Start Here ⬅⬅
 
 Hello, I'm *Tom Purl*! Welcome to my '83 Datsun on the side of the information superhighway.
-
+* Evergreens
 Here's some links that may interest you:
 
 - [[./About-Me.html][About Me]]
 - My [[./tags/cowsayseries.html][series]] on writing a =cowsay= TCP socket server for fun in Ruby. It's a little on the old side but I like how I wrote it.
 - [[./Adventures_Using_USB_Ethernet_Adapters_With_My_Router.html][How I Learned To Avoid USB Ethernet Adapters the Hard Way]]
 - [[./tags/testing.html][Testing hot takes]] 😺
+* Latest Articles
+...and /here's/ my latest articles:
+
+- [[./running-nixos-week-1.html][Running NixOS on a Publicly-Facing Server - One Week In]]
