@@ -6,6 +6,8 @@
 After [[https://www.reddit.com/r/emacs/comments/p4bj5k/moving_my_todo_lists_from_orgmode_into_nextcloud/][discussing this post]] with a few people in Reddit I wanted to emphasize that the process below is *only* for *personal to-do lists and their related notes*. I personally would not do something as foolish as store company information (even to-do's) outside of my employer's cloud and I *really* recommend that you do the same 😸
 #+END_NOTE
 
+-----
+
 I'm in the process of moving all of my *personal to-do lists and projects* into Nextcloud from =org-mode= after almost 10 years. I'm surprised by how well this is working for me and I thought it might be useful to write down some of my thoughts.
 
 But first, a little background. Currently I have two-types of to-do lists:
