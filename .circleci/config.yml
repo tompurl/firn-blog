@@ -1,0 +1,28 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: cimg/base:stable
+
+    working_directory: ~/repo
+
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "b3:38:58:cd:19:ea:ea:69:0a:5c:c7:7a:80:ea:15:3f"
+      - checkout
+      - run:
+          name: install dependencies
+          command: |
+            sudo apt-get update && sudo apt-get install rsync -y
+            wget https://github.com/theiceshelf/firn/releases/latest/download/firn-linux-x86_64 -O ~/repo/firn
+            chmod +x ~/repo/firn
+      - run:
+          name: build
+          command: |
+            ./firn build
+      - run:
+          name: deploy
+          command: |
+            ssh-keyscan $BLOG_HOST >> ~/.ssh/known_hosts
+            rsync -av --progress ./_firn/_site/ $BLOG_USER@$BLOG_HOST:/home/public
