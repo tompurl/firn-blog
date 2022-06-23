@@ -11,6 +11,7 @@ Here's some links that may interest you:
 * Latest Articles
 ...and /here's/ my latest articles:
 
+- [[file:Passing_Bool_To_Pwsh_From_Bash.org][Passing Boolean Parameters To Pwsh from Bash]]
 - [[file:running-nixos-week-1.org][Running NixOS on a Publicly-Facing Server - One Week In]]
 - [[file:Moving_Todos_From_Org_To_Nextcloud.org][Moving my Todo Lists From org-mode into Nextcloud]]
 - [[file:Fun_With_KDE_Neon.org][Fun with KDE Neon]]

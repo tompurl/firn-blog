@@ -1,0 +1,44 @@
+#+title: Passing Boolean Parameters To Pwsh from Bash
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_Tags: powershell bash scripting
+
+This is definitely one of those things that I had to write down after I figured out how to do it because there was *no* help online about it. Also, it's a bit esoteric I guess 😺
+
+Here's my issue - I was writing a Bash script that needed to run a Powershell (i.e. =pwsh=) script on Linux. This pwsh script had a required boolean parameter. So here's what I tried first:
+
+#+BEGIN_SRC bash
+# remember, this is bash :-)
+pwsh ./path/to/script.ps1 -IsAThing "$True"
+pwsh ./path/to/script.ps1 -IsAThing $True
+pwsh ./path/to/script.ps1 -IsAThing 0
+pwsh ./path/to/script.ps1 -IsAThing '`$True'
+pwsh ./path/to/script.ps1 -IsAThing '\$True'
+pwsh ./path/to/script.ps1 -IsAThing "\$True"
+pwsh ./path/to/script.ps1 -IsAThing \$True
+#+END_SRC
+
+But that kept giving me the following error:
+
+#+BEGIN_EXAMPLE
+Cannot process argument transformation on parameter 'IsAThing'. Cannot convert value "System.String"
+to type "System.Boolean". Boolean parameters accept only Boolean values and numbers, such as $True,
+$False, 1 or 0.
+#+END_EXAMPLE
+
+I then tried add =-File= to the command like this:
+
+#+BEGIN_SRC bash
+pwsh -File ./path/to/script.ps1 -IsAThing '$True'
+#+END_SRC
+
+But alas, that also didn't work. Thankfully I really try to surround myself with smart friends, and one of them suggested that I try replacing =-File= with =-Command=. And what do you know, these all worked:
+
+#+BEGIN_SRC bash
+# Working bash + pwsh!!!
+pwsh -Command ./path/to/script.ps1 -IsAThing 0
+pwsh -Command ./path/to/script.ps1 -IsAThing 1
+pwsh -Command ./path/to/script.ps1 -IsAThing '$True'
+pwsh -Command ./path/to/script.ps1 -IsAThing '$False'
+#+END_SRC
+
+Huzzah! I have no idea why this change made the necessary difference, but I sure am glad it did.
