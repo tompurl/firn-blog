@@ -1,0 +1,39 @@
+#+title: Podman for DevOps - Book Review
+#+OPTIONS: toc:nil -:nil \n:t
+#+firn_tags: docker podman devops book-review
+
+[[https://m.media-amazon.com/images/I/41g2wMwwFjL.jpg]]
+(Book cover image courtesy of [[https://www.amazon.com/Podman-DevOps-Containerization-reimagined-companion-ebook/dp/B09VQ2JL31][Amazon]])
+
+* Meta
+- 📖 *Indiebound book link*: [[https://www.indiebound.org/book/9781803248233]]
+- ✍🏾 *Author(s)*: Arrichiello, Alessandro; Salinetti, Gianni
+- 🌟 *Stars*: 5/5
+
+* My Background
+My current job title is *DevOps Engineer* and I spend quite a bit of time "designing" and deploying Docker/OCI images. I've been doing this for multiple years but it has been a while since I've read a book on Docker-related best practices. A lot has happened recently so I thought I might get something out of this very new book.
+
+Thankfully I can say that this book was /definitely/ worth my time and I would highly recommend it to any DevOps Engineer 😁
+
+* What I Liked
+
+First, it shows how most DevOps engineers can replace the proprietary Docker suite on their desktop with Podman, Buildah, and Skopeo. This is a big win for many people since Docker started charging licensing fees for small-scale usage.
+
+Another nice thing about this book is that is spends a good amount of time explaining how containerization on Linux works "under the hood". For example, I knew very little about how *storage for a container* was actually implemented on a filesystem. This knowledge is helpful regardless of the tools that you use for creating and running containers.
+
+An example of something new I learned was how images are a *huge* layer of abstraction on top of containers and namespaces. A =Dockerfile= is a good way of creating one but you also have lots of other options for creating a new image, like:
+
+- Shell scripts that use the =buildah= CLI
+- Go apps that use the =podman= and =buildah= libraries
+
+The book also shows you common patterns, images and tools for building small, fast images. This information was fairly new to me and I'm eager to see how I can use it to improve things in my future projects.
+
+The book also gives good information on *building a image from a container* using =buildah=. I've done this before and found the examples to be very helpful.
+
+* What I Disliked
+
+The short answer is not much!
+
+Honestly, the only gripe I have about this book (and it's not a proper one in my opinion) is that it is almost exclusively works with Red Hat and Fedora-based images. This makes sense because Red Hat is a *huge* supporter of =podman= and its related tools, and their distributions offer excellent support. Also, many containerized shops are Red Hat shops.
+
+However, I mostly work with Ubuntu-based images. I therefore had to spend a little time re-implementing some of the examples to work on an Ubuntu-based host or create an Ubuntu-based image. It wasn't that difficult and I event learned some cool stuff in the process, but it may be a larger obstacle for container newbies.
