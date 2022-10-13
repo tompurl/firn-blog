@@ -7,8 +7,8 @@
     <script src="{{config.site.url}}/static/js/main.js"></script>
     <link rel="stylesheet" href="{{config.site.url}}/static/css/main.css" type="text/css" media="screen" />
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css"> -->
-    {% if frontmatter.other.html_head %}
-    {{frontmatter.other.html_head}}
+    {% if frontmatter.other.tp_rel_page_path %}
+    <meta http-equiv="Refresh" content="0; url='https://docs.tompurl.com/apps/collectives/p/HqZ2WE93bMSXcdG/Tom%20Purl%27s%20Digital%20Garden/{{frontmatter.other.tp_rel_page_path}}'" />
     {% endif %}
     <style>
     </style>
