@@ -1,3 +1,4 @@
 #+TITLE: 👨 About Me
+#+HTML_HEAD: <meta http-equiv="Refresh" content="0; url='https://docs.tompurl.com/apps/collectives/p/HqZ2WE93bMSXcdG/Tom%20Purl%27s%20Digital%20Garden/About/About%20Me?fileId=59996'" />
 
 This page has been moved [[https://docs.tompurl.com/apps/collectives/p/HqZ2WE93bMSXcdG/Tom%20Purl's%20Digital%20Garden/About/About%20Me?fileId=59996][here]].
