@@ -7,6 +7,9 @@
     <script src="{{config.site.url}}/static/js/main.js"></script>
     <link rel="stylesheet" href="{{config.site.url}}/static/css/main.css" type="text/css" media="screen" />
     <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css"> -->
+    {% if frontmatter.other.html_head %}
+    {{frontmatter.other.html_head}}
+    {% endif %}
     <style>
     </style>
   </head>
