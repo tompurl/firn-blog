@@ -1,4 +1,4 @@
 #+TITLE: How I Learned To Avoid USB Ethernet Adapters the Hard Way
-#+TP_REL_PAGE_PATH: Tech/How%20I%20Learned%20To%20Avoid%20USB%20Ethernet%20Adapters%20the%20Hard%20Way?fileId=60166
+#+TP_REL_PAGE_PATH: Articles/Tech/How%20I%20Learned%20To%20Avoid%20USB%20Ethernet%20Adapters%20the%20Hard%20Way?fileId=60166
 
 This post has been moved to [[https://docs.tompurl.com/apps/collectives/p/HqZ2WE93bMSXcdG/Tom%20Purl's%20Digital%20Garden/Tech/How%20I%20Learned%20To%20Avoid%20USB%20Ethernet%20Adapters%20the%20Hard%20Way?fileId=60166][here]].
